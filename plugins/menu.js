@@ -24,7 +24,7 @@ let rtotalreg = Object.values(global.db.data.users).filter(user => user.register
 let more = String.fromCharCode(8206)
 let readMore = more.repeat(850)   
 let taguser = '@' + m.sender.split("@s.whatsapp.net")[0]
-let str = `مرحبا بك/ي معاك/ي 𝑺𝐴𝑅𝐴-𝐵𝛩𝑇
+let str = `مرحبا بك/ي معاك/ي 𝐽𝐴𝐶𝐾-𝐵𝛩𝑇
 ⎔ ⋅ ───━ •﹝⚡﹞• ━─── ⋅ ⎔
 قسم الجروبات ﹝⚡﹞ 
 ⎔ ⋅ ───━ •﹝⚡﹞• ━─── ⋅ ⎔
