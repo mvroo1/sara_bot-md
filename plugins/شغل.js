@@ -1,86 +1,41 @@
-
-import ytdl from 'ytdl-core';
-import yts from 'yt-search';
-import fs from 'fs';
-import { pipeline } from 'stream';
-import { promisify } from 'util';
-import os from 'os';
-
-const streamPipeline = promisify(pipeline);
-
-var handler = async (m, { conn, command, text, usedPrefix }) => {
-  if (!text) throw `*${usedPrefix}${command} اية الكرسي*`;
-
-  let search = await yts(text);
-  let vid = search.videos[Math.floor(Math.random() * search.videos.length)];
-  if (!search) throw 'Video Not Found, Try Another Title';
-  let { title, thumbnail, timestamp, views, ago, url } = vid;
-  let wm = 'Downloading audio please wait';
-
-  let captvid = `*❖───┊ ♪ يــوتـــيــوب ♪ ┊───❖*
-  ❏ الـعـنوان: ${title}
-
-  ❐ الـمده: ${timestamp}
-
-  ❑ الــمـشهـدات: ${views}
-
-  ❒ مـنذ: ${ago}
-
-  ❒ الـرابــط: ${url}`;
-
-  conn.sendMessage(m.chat, { image: { url: thumbnail }, caption: captvid, footer: author }, { quoted: m });
-
-
-  const audioStream = ytdl(url, {
-    filter: 'audioonly',
-    quality: 'highestaudio',
-  });
-
-  // Get the path to the system's temporary directory
-  const tmpDir = os.tmpdir();
-
-  // Create writable stream in the temporary directory
-  const writableStream = fs.createWriteStream(`${tmpDir}/${title}.mp3`);
-
-  // Start the download
-  await streamPipeline(audioStream, writableStream);
-
-  let doc = {
-    audio: {
-      url: `${tmpDir}/${title}.mp3`
-    },
-    mimetype: 'audio/mp4',
-    fileName: `${title}`,
-    contextInfo: {
-      externalAdReply: {
-        showAdAttribution: true,
-        mediaType: 2,
-        mediaUrl: url,
-        title: title,
-        body: wm,
-        sourceUrl: url,
-        thumbnail: await (await conn.getFile(thumbnail)).data
-      }
-    }
-  };
-
-  await conn.sendMessage(m.chat, doc, { quoted: m });
-
-  // Delete the audio file
-  fs.unlink(`${tmpDir}/${title}.mp3`, (err) => {
-    if (err) {
-      console.error(`Failed to delete audio file: ${err}`);
-    } else {
-      console.log(`Deleted audio file: ${tmpDir}/${title}.mp3`);
-    }
-  });
-};
-
-handler.help = ['play'].map((v) => v + ' <query>');
-handler.tags = ['downloader'];
-handler.command = /^شغل$/i;
-
-handler.exp = 0;
-handler.diamond = false;
-
-export default handler;
+import fetch from "node-fetch"
+import yts from "yt-search"
+import ytdl from 'ytdl-core'
+import axios from 'axios'
+import { youtubedl, youtubedlv2, youtubedlv3 } from '@bochilteam/scraper'
+let handler = async (m, { conn, command, args, text, usedPrefix }) => {
+if (!text) throw `ادخل عنوان للبحث*\n\n*—◉ مثال:*\n*${usedPrefix + command} انمي ناروتو*`
+try {
+const yt_play = await search(args.join(" "))
+let additionalText = ''
+if (command === 'y') {
+additionalText = 'الصوت 🔊'
+} else if (command === 'y2') {
+additionalText = 'الفيديو 🎥'}
+let texto1 = `*ꔹ━ꔹ❰🔊 تحميل يوتيوب 🔊❱ꔹ━ꔹ*\n
+❏ 📌 *العنوان:* ${yt_play[0].title}
+❏ 📆 *وقت النشر:* ${yt_play[0].ago}
+❏ ⌚ *المده:* ${secondString(yt_play[0].duration.seconds)}
+❏ 👀 *المشاهدات:* ${`${MilesNumber(yt_play[0].views)}`}
+❏ 👤 *المؤلف:* ${yt_play[0].author.name}
+❏ ⏯️ *القناه:* ${yt_play[0].author.url}
+❏ 🆔 *ايدي:* ${yt_play[0].videoId}
+❏ 🪬 *النوع:* ${yt_play[0].type}
+❏ 🔗 *الرابط:* ${yt_play[0].url}\n
+❏ *_جاري تحميل ${additionalText}, لحظات وبرسله لك．．．_*`.trim()
+conn.sendMessage(m.chat, { image: { url: yt_play[0].thumbnail }, caption: texto1 }, { quoted: m })
+if (command == 'y') {
+try {
+let q = '128kbps'
+let v = yt_play[0].url
+const yt = await youtubedl(v).catch(async _ => await youtubedlv2(v)).catch(async _ => await youtubedlv3(v))
+const dl_url = await yt.audio[q].download()
+const ttl = await yt.title
+const size = await yt.audio[q].fileSizeH
+await conn.sendFile(m.chat, dl_url, ttl + '.mp3', null, m, false, { mimetype: 'audio/mp4' })
+} catch {
+try {
+let lolhuman = await fetch(`https://api.lolhuman.xyz/api/ytaudio2?apikey=${lolkeysapi}&url=${yt_play[0].url}`)    
+let lolh = await lolhuman.json()
+let n = lolh.result.title || 'ايرور🙂!'
+  
